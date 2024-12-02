@@ -2,7 +2,8 @@
   (:import [java.net Socket])
   (:require [rebel-readline.clojure.main :as rebel]
             [clojure.tools.logging :as log]
-            [nrepl.server :refer [start-server stop-server]]))
+            [nrepl.server :refer [start-server stop-server]]
+            [cider.nrepl :refer (cider-nrepl-handler)]))
 
 (defn high-port []
   (+ 62000 (rand-int 3535)))
@@ -42,7 +43,8 @@
   [& _]
   (let [{:keys [bind port]} (find-unused-addr)
         repl-server (start-server :bind bind
-                                  :port port)]
+                                  :port port
+                                  :handler cider-nrepl-handler)]
     (log/infof "starting rwaweber.repl on %s:%d" bind port)
     (rebel/-main)
     (stop-server repl-server)))
