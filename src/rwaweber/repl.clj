@@ -1,7 +1,7 @@
 (ns rwaweber.repl
   (:import [java.net Socket])
   (:require [rebel-readline.clojure.main :as rebel]
-            [clojure.tools.logging :as log]
+            [taoensso.timbre :as timbre]
             [nrepl.server :refer [start-server stop-server]]
             [cider.nrepl :refer (cider-nrepl-handler)]))
 
@@ -22,7 +22,7 @@
   ([repl-port]
    (let [host "127.0.0.1"]
      (try (Socket. host repl-port)
-          (log/infof
+          (timbre/infof
            "another service already listening on %s:%d, trying another" host repl-port)
           (find-unused-addr (high-port))
           (catch java.net.ConnectException _
@@ -31,11 +31,11 @@
   ([]
    (if (is-file? ".nrepl-port")
      (let [port (read-string (slurp ".nrepl-port"))]
-       (log/infof "found .nrepl-port file, suggesting port %d", port)
+       (timbre/infof "found .nrepl-port file, suggesting port %d", port)
        (find-unused-addr port))
      (let [port (high-port)]
        ;; write out port to file
-       (log/infof "no .nrepl-port file found, using %d", port)
+       (timbre/infof "no .nrepl-port file found, using %d", port)
        (spit ".nrepl-port" port)
        (find-unused-addr port)))))
 
@@ -45,6 +45,6 @@
         repl-server (start-server :bind bind
                                   :port port
                                   :handler cider-nrepl-handler)]
-    (log/infof "starting rwaweber.repl on %s:%d" bind port)
+    (timbre/infof "starting rwaweber.repl on %s:%d" bind port)
     (rebel/-main)
     (stop-server repl-server)))
